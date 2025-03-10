@@ -32,7 +32,7 @@ jobs:
     - name: golangci-lintを使った静的解析
       uses: golangci/golangci-lint-action@v4
       with:
-        version: v1.57
+        version: v1.64.6
 
     - name: コードのビルド確認
       run: go build -v ./...
