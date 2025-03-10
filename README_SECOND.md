@@ -19,3 +19,12 @@ go test ./operations -v
 # all
 go test ./... -v
 ```
+
+# 2.  confirm coverage & report
+```sh
+# include coverage test
+go test -coverprofile=coverage.out ./...
+
+# create html from coverage report
+go tool cover -html=coverage.out -o coverage.html
+```

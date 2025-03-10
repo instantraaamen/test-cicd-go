@@ -1,0 +1,48 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: リポジトリをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: Goセットアップ
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.1'
+
+    - name: 依存関係をインストール
+      run: go mod download
+
+    - name: コードフォーマット確認（gofmt）
+      run: |
+        if [ "$(gofmt -l .)" ]; then
+          echo "コードがgofmtに準拠していません"
+          exit 1
+        fi
+
+    - name: golangci-lintを使った静的解析
+      uses: golangci/golangci-lint-action@v4
+      with:
+        version: v1.64.6
+
+    - name: コードのビルド確認
+      run: go build -v ./...
+
+    - name: テスト実行とカバレッジ収集
+      run: |
+        go test -coverprofile=coverage.out ./...
+
+    - name: カバレッジレポートを成果物としてアップロード
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.out
