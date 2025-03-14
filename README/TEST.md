@@ -1,5 +1,4 @@
-# test-cicd-go
-
+# 0. repository tree for target
 ```sh
 operations/
 ├── add.go

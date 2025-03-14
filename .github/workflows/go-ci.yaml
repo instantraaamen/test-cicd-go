@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,12 +41,42 @@ jobs:
     - name: コードのビルド確認
       run: go build -v ./...
 
-    - name: テスト実行とカバレッジ収集
+    - name: テストとカバレッジチェック（閾値20%）
       run: |
         go test -coverprofile=coverage.out ./...
+        coverage=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+        echo "テストカバレッジは ${coverage}% です。"
+        if (( $(echo "$coverage < 20.0" | bc -l) )); then
+          echo "カバレッジが80%未満のため失敗しました。"
+          exit 1
+        fi
 
     - name: カバレッジレポートを成果物としてアップロード
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: coverage.out
+
+    - name: Slack通知（成功時）
+      if: success()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_MESSAGE: "✅ Goプロジェクトのテストが成功しました！"
+
+    - name: Slack通知（失敗時）
+      if: failure()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_COLOR: danger
+        SLACK_MESSAGE: "⚠️ テストまたはカバレッジが失敗しました。ワークフローを確認してください！"
+
+    - name: PRコメントでカバレッジ通知
+      if: github.event_name == 'pull_request'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: coverage-report
+        message: |
+          ## カバレッジレポート 📊
+          - 現在のテストカバレッジは `${{ env.coverage }}%` です。

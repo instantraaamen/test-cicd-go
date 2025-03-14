@@ -1,13 +1,19 @@
-# test-cicd-go
-
+# 0. repository tree
 ```sh
-calc-project/
+.
+├── Dockerfile
+├── README_DOCKER.md
+├── README_FIRST.md
+├── README_SECOND.md
+├── go.mod
 ├── main.go
-└── operations/
+└── operations
     ├── add.go
-    ├── sub.go
+    ├── add_test.go
+    ├── div.go
+    ├── div_test.go
     ├── mul.go
-    └── div.go
+    └── sub.go
 ```
 
 # 1. module init
